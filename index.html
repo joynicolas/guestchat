@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GuestChat — Enter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="login-body">
+  <div class="grain"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <main class="login-shell">
+    <div class="login-card">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span class="brand-name">guestchat</span>
+      </div>
+
+      <h1 class="login-title">
+        come on in.<br>
+        <em>no email needed.</em>
+      </h1>
+
+      <p class="login-sub">Pick a guest name and a 6-digit pin. First time creates your account; same combo logs you back in.</p>
+
+      <form id="login-form" class="login-form" autocomplete="off">
+        <label class="field">
+          <span class="field-label">guest name</span>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="abcd123"
+            maxlength="20"
+            pattern="[a-zA-Z0-9_]{3,20}"
+            title="3–20 characters, letters, numbers, underscores"
+            required
+          />
+        </label>
+
+        <label class="field">
+          <span class="field-label">6-digit pin</span>
+          <input
+            type="password"
+            id="pin"
+            name="pin"
+            placeholder="••••••"
+            maxlength="6"
+            minlength="6"
+            pattern="[0-9]{6}"
+            inputmode="numeric"
+            title="Exactly 6 digits"
+            required
+          />
+        </label>
+
+        <button type="submit" class="btn-primary" id="submit-btn">
+          <span>enter chatroom</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <p class="status-msg" id="status-msg"></p>
+      </form>
+
+      <footer class="login-foot">
+        <span>v1.0</span>
+        <span class="dot">·</span>
+        <span>Built on Supabase</span>
+      </footer>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
