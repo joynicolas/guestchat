@@ -70,18 +70,14 @@ function closeSidebar() {
   sidebarOverlay.classList.remove('visible');
 }
 function updateMobileNav() {
-  if (!isMobile()) {
-    backBtn.style.display = 'none';
-    menuBtn.style.display = '';
-    return;
-  }
-  // In private chat → show back arrow instead of hamburger
+  // On desktop, .mobile-only CSS already hides both buttons
+  // On mobile, .mobile-only shows them — we toggle .hidden to control which one
   if (currentRoom.type === 'private') {
-    menuBtn.style.display = 'none';
-    backBtn.style.display = 'flex';
+    menuBtn.classList.add('hidden');
+    backBtn.classList.remove('hidden');
   } else {
-    backBtn.style.display = 'none';
-    menuBtn.style.display = 'flex';
+    menuBtn.classList.remove('hidden');
+    backBtn.classList.add('hidden');
   }
 }
 
@@ -96,11 +92,38 @@ function init() {
   PresenceManager.start(me);
 
   loadRecentChats();
+  loadUnreadCounts(); // populate badges from DB before showing chat
   switchToGlobal();
   subscribeToMessages();
 
   bindEvents();
   updateMobileNav();
+}
+
+// Query the database for all unread incoming private messages,
+// group by sender, populate the unread badge counts.
+async function loadUnreadCounts() {
+  const { data, error } = await supabaseClient
+    .from('messages')
+    .select('sender_username')
+    .eq('recipient_username', me)
+    .eq('read', false)
+    .eq('deleted', false);
+
+  if (error) {
+    console.warn('failed to load unread counts', error);
+    return;
+  }
+
+  unreadCounts = {};
+  (data || []).forEach(row => {
+    const peer = row.sender_username;
+    unreadCounts[peer] = (unreadCounts[peer] || 0) + 1;
+    recentChats.add(peer); // make sure they appear in recent chats
+  });
+  saveRecentChats();
+  renderRecentChats();
+  renderOnlineUsers(PresenceManager.getOnline());
 }
 
 // ============================================================
@@ -130,6 +153,27 @@ async function loadMessages() {
   }
   messages = data || [];
   renderMessages();
+
+  // Mark incoming unread messages as read (private chats only)
+  if (currentRoom.type === 'private') {
+    markPeerMessagesAsRead(currentRoom.peer);
+  }
+}
+
+// Mark all messages FROM `peer` TO `me` as read in the database.
+// This triggers a Realtime UPDATE event that the sender will receive,
+// flipping their tick from sent (grey) to read (orange).
+async function markPeerMessagesAsRead(peer) {
+  const { error } = await supabaseClient
+    .from('messages')
+    .update({ read: true })
+    .eq('sender_username', peer)
+    .eq('recipient_username', me)
+    .eq('read', false);
+
+  if (error) {
+    console.warn('failed to mark as read', error);
+  }
 }
 
 // ============================================================
@@ -168,6 +212,15 @@ function onNewMessage(msg) {
   if (inCurrent) {
     messages.push(msg);
     renderMessages();
+    // If it's an incoming private message and the chat is open, mark it read immediately
+    if (
+      currentRoom.type === 'private' &&
+      msg.sender_username === currentRoom.peer &&
+      msg.recipient_username === me &&
+      !msg.read
+    ) {
+      markPeerMessagesAsRead(currentRoom.peer);
+    }
     return;
   }
 
@@ -178,6 +231,7 @@ function onNewMessage(msg) {
     recentChats.add(peer);
     saveRecentChats();
     renderRecentChats();
+    renderOnlineUsers(PresenceManager.getOnline());
   }
 }
 
@@ -245,6 +299,26 @@ function renderMessage(msg) {
   time.textContent = formatTime(new Date(msg.created_at));
   meta.appendChild(author);
   meta.appendChild(time);
+
+  // Read receipt: only on MY messages in PRIVATE chats (not global, not deleted, not theirs)
+  if (
+    msg.sender_username === me &&
+    msg.recipient_username !== null &&
+    !msg.deleted
+  ) {
+    const receipt = document.createElement('span');
+    receipt.className = 'msg-receipt ' + (msg.read ? 'read' : 'sent');
+    receipt.title = msg.read ? 'read' : 'sent';
+    if (msg.read) {
+      // Double tick (read)
+      receipt.innerHTML = '<svg width="18" height="12" viewBox="0 0 18 12" fill="none"><path d="M1 6.5L4 9.5L10 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 6.5L10 9.5L17 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else {
+      // Single tick (sent)
+      receipt.innerHTML = '<svg width="14" height="12" viewBox="0 0 14 12" fill="none"><path d="M1 6.5L5 10.5L13 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+    meta.appendChild(receipt);
+  }
+
   body.appendChild(meta);
 
   const bubble = document.createElement('div');
@@ -548,7 +622,7 @@ async function doSearch(q) {
   }
 
   if (!data.length) {
-    searchResults.innerHTML = '<li class="empty-list">no users found</li>';
+    searchResults.innerHTML = '<li class="empty-list highlight">no users found with that name</li>';
     return;
   }
 

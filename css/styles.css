@@ -499,11 +499,17 @@ html, body {
   background: var(--accent);
   color: var(--ink-900);
   font-size: 10px;
-  font-weight: 700;
-  padding: 2px 7px;
+  font-weight: 800;
+  font-family: var(--mono);
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
   border-radius: 10px;
-  min-width: 18px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(224, 120, 86, 0.5);
+  flex-shrink: 0;
 }
 
 .empty-list {
@@ -511,6 +517,17 @@ html, body {
   font-size: 12px;
   color: var(--cream-faint);
   font-style: italic;
+}
+.empty-list.highlight {
+  color: var(--accent);
+  font-weight: 500;
+  font-style: normal;
+  background: var(--accent-soft);
+  margin: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--accent);
+  text-align: center;
+  padding: 12px;
 }
 
 /* ============================================
@@ -698,6 +715,20 @@ html, body {
   color: var(--cream-faint);
   font-size: 13px;
 }
+
+/* Read receipts — placed in the msg-meta line next to the timestamp */
+.msg-receipt {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  vertical-align: middle;
+  transition: color 0.2s ease;
+}
+.msg-receipt svg {
+  display: block;
+}
+.msg-receipt.sent { color: var(--cream-faint); }     /* dim grey: delivered/sent */
+.msg-receipt.read { color: var(--accent-bright); }   /* bright orange: read */
 
 .day-divider {
   text-align: center;
@@ -890,8 +921,10 @@ html, body {
    RESPONSIVE / MOBILE
    ============================================ */
 
-/* Mobile-only utility — hidden on desktop */
-.mobile-only { display: none !important; }
+/* Mobile-only utility — hidden on desktop, shown on mobile */
+/* Note: no !important so JS can hide individual buttons via .hidden class */
+.mobile-only { display: none; }
+.mobile-only.hidden { display: none !important; }
 
 /* Sidebar overlay — only visible on mobile when sidebar is open */
 .sidebar-overlay {
@@ -935,7 +968,8 @@ html, body {
   .sidebar.open { transform: translateX(0); }
 
   /* Show mobile-only buttons */
-  .mobile-only { display: flex !important; }
+  .mobile-only { display: flex; }
+  .mobile-only.hidden { display: none; }
 
   /* Chat head adjusts to fit nav buttons */
   .chat-head {
