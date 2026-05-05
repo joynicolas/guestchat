@@ -53,6 +53,38 @@ const lightbox = $('lightbox');
 const lightboxContent = $('lightbox-content');
 const lightboxClose = $('lightbox-close');
 
+// Mobile UI
+const menuBtn = $('menu-btn');
+const backBtn = $('back-btn');
+const sidebarEl = document.querySelector('.sidebar');
+const sidebarOverlay = $('sidebar-overlay');
+
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
+function openSidebar() {
+  sidebarEl.classList.add('open');
+  sidebarOverlay.classList.add('visible');
+}
+function closeSidebar() {
+  sidebarEl.classList.remove('open');
+  sidebarOverlay.classList.remove('visible');
+}
+function updateMobileNav() {
+  if (!isMobile()) {
+    backBtn.style.display = 'none';
+    menuBtn.style.display = '';
+    return;
+  }
+  // In private chat → show back arrow instead of hamburger
+  if (currentRoom.type === 'private') {
+    menuBtn.style.display = 'none';
+    backBtn.style.display = 'flex';
+  } else {
+    backBtn.style.display = 'none';
+    menuBtn.style.display = 'flex';
+  }
+}
+
 // ============================================================
 // INIT
 // ============================================================
@@ -68,6 +100,7 @@ function init() {
   subscribeToMessages();
 
   bindEvents();
+  updateMobileNav();
 }
 
 // ============================================================
@@ -364,6 +397,8 @@ function switchToGlobal() {
   chatAvatar.textContent = '◉';
   globalRoomBtn.classList.add('active');
   document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+  closeSidebar();
+  updateMobileNav();
   loadMessages();
 }
 
@@ -388,6 +423,8 @@ function switchToPrivate(peer) {
     el.classList.toggle('active', el.dataset.username === peer);
   });
 
+  closeSidebar();
+  updateMobileNav();
   loadMessages();
 }
 
@@ -632,6 +669,18 @@ function bindEvents() {
     clearCurrentUser();
     window.location.href = 'index.html';
   });
+
+  // Mobile: hamburger opens sidebar
+  menuBtn.addEventListener('click', openSidebar);
+
+  // Mobile: back arrow goes from private chat → global
+  backBtn.addEventListener('click', switchToGlobal);
+
+  // Mobile: tap overlay to close sidebar
+  sidebarOverlay.addEventListener('click', closeSidebar);
+
+  // Update mobile nav on resize (e.g. rotation)
+  window.addEventListener('resize', updateMobileNav);
 
   window.addEventListener('beforeunload', () => {
     PresenceManager.stop();

@@ -42,7 +42,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
-  height: 100%;
+  height: 100dvh;
   background: var(--ink-900);
   color: var(--cream);
   font-family: var(--sans);
@@ -266,7 +266,7 @@ html, body {
 .app-shell {
   display: grid;
   grid-template-columns: 320px 1fr;
-  height: 100vh;
+  height: 100dvh;
   position: relative;
   z-index: 2;
 }
@@ -527,7 +527,7 @@ html, body {
 .chat-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   padding: 16px 24px;
   border-bottom: 1px solid rgba(245, 234, 214, 0.05);
   background: rgba(22, 19, 15, 0.5);
@@ -887,24 +887,116 @@ html, body {
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-400); }
 
 /* ============================================
-   RESPONSIVE
+   RESPONSIVE / MOBILE
    ============================================ */
+
+/* Mobile-only utility — hidden on desktop */
+.mobile-only { display: none !important; }
+
+/* Sidebar overlay — only visible on mobile when sidebar is open */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.sidebar-overlay.visible {
+  display: block;
+  opacity: 1;
+}
+
 @media (max-width: 768px) {
+  /* Use dynamic viewport height so mobile browser bars don't crop the composer */
+  html, body { height: 100dvh; }
+
   .app-shell {
     grid-template-columns: 1fr;
+    height: 100dvh;
   }
+
+  /* Sidebar slides in as drawer */
   .sidebar {
     position: fixed;
     inset: 0;
+    width: 85%;
+    max-width: 340px;
     z-index: 10;
-    width: 100%;
     transform: translateX(-100%);
-    transition: transform 0.3s;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+    /* Respect iPhone notch/home indicator */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
   .sidebar.open { transform: translateX(0); }
+
+  /* Show mobile-only buttons */
+  .mobile-only { display: flex !important; }
+
+  /* Chat head adjusts to fit nav buttons */
+  .chat-head {
+    padding: 14px 14px;
+    gap: 10px;
+    /* Account for iPhone notch in landscape/portrait */
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+  .menu-btn, .back-btn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+  .chat-head-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .chat-title {
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Login responsive bits */
   .login-title { font-size: 32px; }
   .login-card { padding: 32px 24px 24px; }
-  .messages-area { padding: 16px; }
-  .composer { padding: 12px; }
-  .msg { max-width: 85%; }
+
+  /* Chat layout */
+  .messages-area {
+    padding: 14px;
+    gap: 6px;
+  }
+  .composer {
+    padding: 10px 12px;
+    gap: 8px;
+    /* Account for iPhone home indicator */
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  .msg { max-width: 88%; }
+
+  /* Slightly bigger tap targets */
+  .btn-send, .upload-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  /* Prevent iOS zoom-on-focus by ensuring input font is >=16px */
+  #message-input,
+  .field input,
+  .search-box input {
+    font-size: 16px;
+  }
+}
+
+/* Very small screens — extra trim */
+@media (max-width: 380px) {
+  .me-card { padding: 12px 14px; }
+  .search-box { margin: 10px 12px 6px; }
+  .messages-area { padding: 10px; }
+  .composer { padding: 8px 10px; gap: 6px; }
+  .msg-bubble { font-size: 14px; padding: 8px 12px; }
 }

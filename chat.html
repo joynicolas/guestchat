@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta name="theme-color" content="#0e0c0a" />
   <title>GuestChat</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,6 +14,9 @@
   <div class="grain"></div>
 
   <div class="app-shell">
+    <!-- Mobile overlay (covers main when sidebar is open) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
     <!-- LEFT SIDEBAR -->
     <aside class="sidebar">
       <header class="sidebar-head">
@@ -67,6 +71,12 @@
     <!-- MAIN CHAT AREA -->
     <main class="chat-main">
       <header class="chat-head">
+        <button class="icon-btn mobile-only menu-btn" id="menu-btn" title="Menu" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn mobile-only back-btn" id="back-btn" title="Back to global" aria-label="Back to global chat" style="display:none;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
         <div class="chat-head-info">
           <div class="avatar" id="chat-avatar">◉</div>
           <div>
