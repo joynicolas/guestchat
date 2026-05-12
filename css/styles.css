@@ -712,7 +712,7 @@ html, body {
 
 .msg-deleted {
   font-style: italic;
-  color: var(--cream-faint);
+  color: #ffffff;
   font-size: 13px;
 }
 
